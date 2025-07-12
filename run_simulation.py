@@ -40,6 +40,16 @@ print(f"\nFinal inventory snapshot after {DAYS} days:")
 pprint.pprint(store.snapshot())
 
 print("\nSummary:")
+print(f"  Revenue         : ${store.revenue:.2f}")
+print(f"  Expenses        : ${store.expenses:.2f}")
+print(f"  Profit          : ${store.revenue - store.expenses:.2f}")
+print(f"  Inventory Value : ${store.snapshot()['inventory_value']:.2f}")
+
+print("\nOrders placed:")
+for day, sku, qty, cost in store.orders_log:
+    print(f"  {day}: ordered {qty} of {sku} costing ${cost:.2f}")
+
 print(f"  Revenue : ${store.revenue:.2f}")
 print(f"  Expenses: ${store.expenses:.2f}")
 print(f"  Profit  : ${store.revenue - store.expenses:.2f}")
+
