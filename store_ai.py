@@ -75,6 +75,11 @@ class StoreAI:
         self.sales_log.append((ts, sku, qty))
         self.revenue += self.price.get(sku, 0) * qty
 
+        self.revenue += self.price.get(sku, 0) * qty
+
+        self.revenue += self.cat[sku].get("price", 0) * qty
+
+
         # exponential smoothing update
         self.demand_hat[sku] = (
             self.alpha * qty + (1.0 - self.alpha) * self.demand_hat[sku]
@@ -98,8 +103,15 @@ class StoreAI:
             "on_hand": self.on_hand.copy(),
             "on_order": self.on_order.copy(),
             "demand_hat": self.demand_hat.copy(),
+
             "price": {k: round(v, 2) for k, v in self.price.items()},
             "inventory_value": round(self._inventory_value(), 2),
+
+
+            "price": {k: round(v, 2) for k, v in self.price.items()},
+            "inventory_value": round(self._inventory_value(), 2),
+
+
             "revenue": round(self.revenue, 2),
             "expenses": round(self.expenses, 2),
             "profit": round(self.revenue - self.expenses, 2),
@@ -128,8 +140,17 @@ class StoreAI:
             order_qty = math.ceil(gap / case) * case
 
             self.on_order[sku] += order_qty
+
             cost = order_qty * self.cost.get(sku, 0)
             self.expenses += cost
+
+
+            cost = order_qty * self.cost.get(sku, 0)
+            self.expenses += cost
+
+            self.expenses += order_qty * self.cat[sku].get("cost", 0)
+
+
             arrival_day = today + dt.timedelta(days=L)
             self._order_pipe[arrival_day].append((sku, order_qty))
             self.orders_log.append((today, sku, order_qty, cost))
