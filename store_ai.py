@@ -1,6 +1,26 @@
 import collections
 import datetime as dt
 import math
+import random
+
+
+class CustomerAgent:
+    """Tiny learning agent representing a supermarket shopper."""
+
+    def __init__(self, preferences: dict[str, float] | None = None):
+        self.preferences = preferences or {}
+
+    def choose_item(self, store: "StoreAI") -> tuple[str, int]:
+        items = list(store.cat)
+        weights = [self.preferences.get(sku, 1.0) for sku in items]
+        sku = random.choices(items, weights=weights, k=1)[0]
+        qty = random.randint(1, 3)
+        return sku, qty
+
+    def learn(self, sku: str, success: bool) -> None:
+        mult = 1.1 if success else 0.9
+        self.preferences[sku] = self.preferences.get(sku, 1.0) * mult
+
 
 class StoreAI:
     """Very small-footprint inventory brain for a single supermarket."""
@@ -53,6 +73,7 @@ class StoreAI:
 
         self.on_hand[sku] -= qty
         self.sales_log.append((ts, sku, qty))
+        self.revenue += self.price.get(sku, 0) * qty
 
         self.revenue += self.price.get(sku, 0) * qty
 
@@ -64,6 +85,11 @@ class StoreAI:
             self.alpha * qty + (1.0 - self.alpha) * self.demand_hat[sku]
         )
         return True
+
+    def serve(self, ts: dt.date, customer: CustomerAgent) -> None:
+        sku, qty = customer.choose_item(self)
+        success = self.sell(ts, sku, qty)
+        customer.learn(sku, success)
 
     def daily_tick(self, today: dt.date) -> None:
         """Advance simulation by one day: receive deliveries and place new orders."""
@@ -80,6 +106,11 @@ class StoreAI:
 
             "price": {k: round(v, 2) for k, v in self.price.items()},
             "inventory_value": round(self._inventory_value(), 2),
+
+
+            "price": {k: round(v, 2) for k, v in self.price.items()},
+            "inventory_value": round(self._inventory_value(), 2),
+
 
             "revenue": round(self.revenue, 2),
             "expenses": round(self.expenses, 2),
@@ -113,7 +144,12 @@ class StoreAI:
             cost = order_qty * self.cost.get(sku, 0)
             self.expenses += cost
 
+
+            cost = order_qty * self.cost.get(sku, 0)
+            self.expenses += cost
+
             self.expenses += order_qty * self.cat[sku].get("cost", 0)
+
 
             arrival_day = today + dt.timedelta(days=L)
             self._order_pipe[arrival_day].append((sku, order_qty))

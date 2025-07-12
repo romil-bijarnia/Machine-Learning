@@ -1,10 +1,10 @@
-"""Run a 30‑day supermarket simulation using the minimalist StoreAI."""
+"""Run a 30‑day supermarket simulation with learning customer agents."""
 
 import datetime as dt
 import random
 import pprint
 
-from store_ai import StoreAI
+from store_ai import StoreAI, CustomerAgent
 
 # --------------------------------------------------------------------- #
 # 1. Static catalogue definition                                        #
@@ -19,6 +19,7 @@ catalogue = {
 # 2. Run simulation                                                     #
 # --------------------------------------------------------------------- #
 store = StoreAI(catalogue, alpha=0.2)
+customers = [CustomerAgent() for _ in range(50)]
 
 start_date = dt.date(2025, 7, 12)
 DAYS = 30
@@ -26,10 +27,10 @@ DAYS = 30
 for day in range(DAYS):
     today = start_date + dt.timedelta(days=day)
 
-    # pseudo‑random customer traffic
-    for _ in range(random.randint(30, 60)):
-        sku = random.choice(list(catalogue))
-        store.sell(today, sku)
+    # each customer may shop once per day with some probability
+    for cust in customers:
+        if random.random() < 0.6:
+            store.serve(today, cust)
 
     store.daily_tick(today)
 
@@ -48,6 +49,7 @@ print(f"  Inventory Value : ${store.snapshot()['inventory_value']:.2f}")
 print("\nOrders placed:")
 for day, sku, qty, cost in store.orders_log:
     print(f"  {day}: ordered {qty} of {sku} costing ${cost:.2f}")
+
 
 print(f"  Revenue : ${store.revenue:.2f}")
 print(f"  Expenses: ${store.expenses:.2f}")
