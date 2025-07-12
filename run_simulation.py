@@ -10,9 +10,9 @@ from store_ai import StoreAI
 # 1. Static catalogue definition                                        #
 # --------------------------------------------------------------------- #
 catalogue = {
-    "bread": {"case": 20, "lead": 2, "safety": 15},
-    "milk":  {"case": 12, "lead": 1, "safety": 10},
-    "eggs":  {"case": 30, "lead": 3, "safety": 25},
+    "bread": {"case": 20, "lead": 2, "safety": 15, "cost": 1.2, "price": 2.5},
+    "milk":  {"case": 12, "lead": 1, "safety": 10, "cost": 0.6, "price": 1.5},
+    "eggs":  {"case": 30, "lead": 3, "safety": 25, "cost": 2.0, "price": 3.5},
 }
 
 # --------------------------------------------------------------------- #
@@ -38,3 +38,8 @@ for day in range(DAYS):
 # --------------------------------------------------------------------- #
 print(f"\nFinal inventory snapshot after {DAYS} days:")
 pprint.pprint(store.snapshot())
+
+print("\nSummary:")
+print(f"  Revenue : ${store.revenue:.2f}")
+print(f"  Expenses: ${store.expenses:.2f}")
+print(f"  Profit  : ${store.revenue - store.expenses:.2f}")
